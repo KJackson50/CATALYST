@@ -1,0 +1,2 @@
+- Hostname: <SITE>-<ROLE>-<ID>
+- Loopback0: /32 per device

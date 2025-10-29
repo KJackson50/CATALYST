@@ -1,0 +1,16 @@
+# Global + site-specific settings for templates and scripts
+
+global:
+  mgmt_vrf: "MGMT"
+  mgmt_vlan: 10
+  source_interfaces:
+    syslog: "Loopback0"
+    snmp: "Loopback0"
+
+sites:
+  US-ORL-EPIC-1:
+    mgmt_vrf: "MGMT-EPIC"
+    mgmt_vlan: 110
+    pnp_claim_defaults:
+      templateName: "day0_switch"
+      siteName: "Global/US/Orlando/Epic/Building1/Floor1"
