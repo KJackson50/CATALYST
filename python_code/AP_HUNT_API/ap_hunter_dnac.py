@@ -26,7 +26,7 @@ import requests
 
 # ---------------------- USER INPUTS / ENVIRONMENT -----------------------
 # 🔶 OPTION A: Hardcode DNAC_BASE here (uncomment and edit).
-DNAC_BASE = "https://dnac.mycorp.local"   ### 🔶 YOU EDIT HERE (optional)
+DNAC_BASE = "https:10.147.3.62"   ### 🔶 YOU EDIT HERE (optional)
 # DNAC_BASE = os.getenv("DNAC_BASE", "").rstrip("/")  # or set as environment variable
 
 # 🔶 VERIFY_TLS: set True if your DNAC uses a valid SSL certificate
