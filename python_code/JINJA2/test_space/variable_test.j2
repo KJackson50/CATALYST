@@ -1,14 +1,61 @@
+!===LOOPBACK VARIABLES===
 {% macro add_to_octet(loopback, index, value) -%}
 {% set parts = loopback.split('.') %}
-{% set parts = parts[:index] + [ (parts[index] | int + value) | string ] + parts[index+1:] %}
-{{ parts | join('.') }}
+{% set updated = parts | list %}
+{% set new_val = (parts[index] | int + value) %}
+{% set _ = updated.setitem(index, new_val | string) %}
+{{ updated | join('.') }}
 {%- endmacro %}
-
+!
+!=== TYPE CASTING ===
+{% set GEN_P2P_VLAN1 = GEN_P2P_VLAN1 | int %}
+{% set GEN_P2P_VLAN2 = GEN_P2P_VLAN2 | int %}
+!
 {% set loopback_INFRA = add_to_octet(loopback, 1, 40) %}
 {% set loopback_POS = add_to_octet(loopback, 1, 16) %}
 {% set loopback_SERVICES = add_to_octet(loopback, 1, 24) %}
 {% set loopback_GUEST = add_to_octet(loopback, 1, 8) %}
-{% set loopback_PARTNER = add_to_octet(loopback, 1, 32) %}
+{% set loopback_BPARTNER = add_to_octet(loopback, 1, 32) %}
+!=========================
+!=== MACROS ===
+{% macro ip_add(ip, d1=None, d2=None, d3=None, d4=None) -%}
+{# Split and copy to a mutable list #}
+{% set p = ip.split('.') | list %}
+{% if d1 is not none %}
+{% set p = [ (p[0]|int + d1)|string, p[1], p[2], p[3] ] %}
+{% endif %}
+{% if d2 is not none %}
+{% set p = [ p[0], (p[1]|int + d2)|string, p[2], p[3] ] %}
+{% endif %}
+{% if d3 is not none %}
+{% set p = [ p[0], p[1], (p[2]|int + d3)|string, p[3] ] %}
+{% endif %}
+{% if d4 is not none %}
+{% set p = [ p[0], p[1], p[2], (p[3]|int + d4)|string ] %}
+{% endif %}
+{{ p | join('.') }}
+{%- endmacro %}
+
+!=== SVI VARIABLES ===
+{% set svi_INFRA    = ip_add(svi,  d2=40, d4=1) %}
+{% set svi_POS      = ip_add(svi,  d2=16, d4=1) %}
+{% set svi_SERVICES = ip_add(svi,  d2=24, d4=1) %}
+{% set svi_GUEST    = ip_add(svi,  d2=8,  d4=1) %}
+{% set svi_BPARTNER = ip_add(svi,  d2=32, d4=1) %}
+
+!=== DIST1 VARIABLES ===
+{% set dist1_INFRA    = ip_add(dist1, d2=40, d4=1) %}
+{% set dist1_POS      = ip_add(dist1, d2=16, d4=1) %}
+{% set dist1_SERVICES = ip_add(dist1, d2=24, d4=1) %}
+{% set dist1_GUEST    = ip_add(dist1, d2=8,  d4=1) %}
+{% set dist1_BPARTNER = ip_add(dist1, d2=32, d4=1) %}
+
+!=== DIST2 VARIABLES ===
+{% set dist2_INFRA    = ip_add(dist2, d2=40, d4=1) %}
+{% set dist2_POS      = ip_add(dist2, d2=16, d4=1) %}
+{% set dist2_SERVICES = ip_add(dist2, d2=24, d4=1) %}
+{% set dist2_GUEST    = ip_add(dist2, d2=8,  d4=1) %}
+{% set dist2_BPARTNER = ip_add(dist2, d2=32, d4=1) %}
 !
 no service pad
 service tcp-keepalives-in
@@ -258,18 +305,18 @@ spanning-tree etherchannel guard misconfig
 spanning-tree extend system-id
 spanning-tree vlan 10,20,40,50,60,70 priority 24576
 spanning-tree vlan {{GEN_P2P_VLAN1}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN1 +100}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN1 +300}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN1 +400}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN1 +500}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN1 +600}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN1 + 100}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN1 + 300}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN1 + 400}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN1 + 500}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN1 + 600}} priority 61440
 !
 spanning-tree vlan {{GEN_P2P_VLAN2}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN2 +100}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN2 +300}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN2 +400}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN2 +500}} priority 61440
-spanning-tree vlan {{GEN_P2P_VLAN2 +600}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN2 + 100}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN2 + 300}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN2 + 400}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN2 + 500}} priority 61440
+spanning-tree vlan {{GEN_P2P_VLAN2 + 600}} priority 61440
 !
 dot1x system-auth-control
 dot1x test timeout 300
@@ -326,19 +373,19 @@ vlan 999
 vlan {{GEN_P2P_VLAN1}}
 name L3-GLOBAL-{{DIST1_NAME}}
 !
-vlan {{GEN_P2P_VLAN1 +100}}
+vlan {{GEN_P2P_VLAN1 + 100}}
 name L3-INFRA-{{DIST1_NAME}}
 !
-vlan {{GEN_P2P_VLAN1 +300}}
+vlan {{GEN_P2P_VLAN1 + 300}}
 name L3-POS-{{DIST1_NAME}}
 !
-vlan {{GEN_P2P_VLAN1 +400}}
+vlan {{GEN_P2P_VLAN1 + 400}}
 name L3-SERVICES-{{DIST1_NAME}}
 !
-vlan {{GEN_P2P_VLAN1 +500}}
+vlan {{GEN_P2P_VLAN1 + 500}}
 name L3-GUEST-{{DIST1_NAME}}
 !
-vlan {{GEN_P2P_VLAN1 +600}}
+vlan {{GEN_P2P_VLAN1 + 600}}
 name L3-BPARTNER-{{DIST1_NAME}}
 !
 !
@@ -346,19 +393,19 @@ name L3-BPARTNER-{{DIST1_NAME}}
 vlan {{GEN_P2P_VLAN2}}
 name L3-GLOBAL-{{DIST2_NAME}}
 !
-vlan {{GEN_P2P_VLAN2 +100}}
+vlan {{GEN_P2P_VLAN2 + 100}}
 name L3-INFRA-{{DIST2_NAME}}
 !
-vlan {{GEN_P2P_VLAN2 +300}}
+vlan {{GEN_P2P_VLAN2 + 300}}
 name L3-POS-{{DIST2_NAME}}
 !
 vlan {{SERVICES_P2P_VLAN2}}
 name L3-SERVICES-{{DIST2_NAME}}
 !
-vlan {{GEN_P2P_VLAN2 +500}}
+vlan {{GEN_P2P_VLAN2 + 500}}
 name L3-GUEST-{{DIST2_NAME}}
 !
-vlan {{GEN_P2P_VLAN2 +600}}
+vlan {{GEN_P2P_VLAN2 + 600}}
 name L3-BPARTNER-{{DIST2_NAME}}
 !
 class-map match-any VOIP
@@ -469,28 +516,28 @@ template UDXCORP-DEFAULT-ACCESS-1
 !
 interface Loopback1
 Description GLOBAL VRF
-ip address {{LOOPBACK1_GEN}} 255.255.255.255
+ip address {{loopback}} 255.255.255.255
 spanning-tree guard root
 no shutdown
 !
 interface Loopback2
 Description INFRA VRF
 ip vrf forwarding INFRA
-ip address {{LOOPBACK2_INFRA}} 255.255.255.255
+ip address {{loopback_INFRA}} 255.255.255.255
 spanning-tree guard root
 no shutdown
 !
 interface Loopback4
 Description POS VRF
 ip vrf forwarding POS
-ip address {{LOOPBACK4_POS}} 255.255.255.255
+ip address {{loopback_POS}} 255.255.255.255
 spanning-tree guard root
 no shutdown
 !
 interface Loopback5
 Description SERVICES VRF
 ip vrf forwarding SERVICES
-ip address {{LOOPBACK5_SERVICES}} 255.255.255.255
+ip address {{loopback_SERVICES}} 255.255.255.255
 ip pim sparse-mode
 spanning-tree guard root
 no shutdown
@@ -498,14 +545,14 @@ no shutdown
 interface Loopback6
 Description GUEST VRF
 ip vrf forwarding GUEST
-ip address {{LOOPBACK6_GUEST}} 255.255.255.255
+ip address {{loopback_GUEST}} 255.255.255.255
 spanning-tree guard root
 no shutdown
 !
 interface Loopback7
 Description BPARTNER VRF
 ip vrf forwarding BPARTNER
-ip address {{LOOPBACK7_BPARTNER}} 255.255.255.255
+ip address {{loopback_BPARTNER}} 255.255.255.255
 spanning-tree guard root
 no shutdown
 !
@@ -517,7 +564,7 @@ interface Vlan1
 !
 interface Vlan10
 description GLOBAL-DATA-VLAN
-ip address {{VLAN10_GEN_SVI}} {{SUBNET_MASK}}
+ip address {{svi}} {{SUBNET_MASK}}
  ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -536,7 +583,7 @@ spanning-tree guard root
 interface Vlan20
 description INFRA-VLAN
 ip vrf forwarding INFRA
-ip address {{VLAN20_INFRA_SVI}} {{SUBNET_MASK}}
+ip address {{svi_INFRA}} {{SUBNET_MASK}}
 ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -550,7 +597,7 @@ spanning-tree guard root
 interface Vlan40
  description POS-VLAN
 ip vrf forwarding POS
-ip address {{VLAN40_POS_SVI}} {{SUBNET_MASK}}
+ip address {{svi_POS}} {{SUBNET_MASK}}
  ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -564,7 +611,7 @@ spanning-tree guard root
 interface Vlan50
  description SERVICES-VLAN
 ip vrf forwarding SERVICES
-ip address {{VLAN50_SERVICES_SVI}} {{SUBNET_MASK}}
+ip address dist1}} {{SUBNET_MASK}}
  ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -580,7 +627,7 @@ spanning-tree guard root
 interface Vlan60
  description GUEST-VLAN
 ip vrf forwarding GUEST
-ip address {{VLAN60_GUEST_SVI}} {{SUBNET_MASK}}
+ip address {{svi_GUEST}} {{SUBNET_MASK}}
  ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -594,7 +641,7 @@ spanning-tree guard root
 interface Vlan70
  description BPARTNER-VLAN
 ip vrf forwarding BPARTNER
-ip address {{VLAN70_BPARTNER_SVI}} {{SUBNET_MASK}}
+ip address {{svi_BPARTNER}} {{SUBNET_MASK}}
  ip verify unicast reverse-path
  ip helper-address 10.148.68.53
  no ip redirects
@@ -607,7 +654,7 @@ spanning-tree guard root
 !         
 interface Vlan {{GEN_P2P_VLAN1}}
 description L3-to-{{DIST1_NAME}}
-ip address {{GEN_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -619,10 +666,10 @@ ip hold-time eigrp 304 3
 ip pim sparse-mode
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN1 +100}}
+interface Vlan {{GEN_P2P_VLAN1 + 100}}
 description INFRA L3-to-{{DIST1_NAME}}
 ip vrf forwarding INFRA
-ip address {{INFRA_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1_INFRA}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -633,10 +680,10 @@ ip hello-interval eigrp 20 1
 ip hold-time eigrp 20 3
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN1 +300}}
+interface Vlan {{GEN_P2P_VLAN1 + 300}}
 description POS L3-to-{{DIST1_NAME}}
 ip vrf forwarding POS
-ip address {{POS_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1_POS}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -647,10 +694,10 @@ ip hello-interval eigrp 40 1
 ip hold-time eigrp 40 3
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN1 +400}}
+interface Vlan {{GEN_P2P_VLAN1 + 400}}
 description SERVICES L3-to-{{DIST1_NAME}}
 ip vrf forwarding SERVICES
-ip address {{SERVICES_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1_SERVICES}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -662,10 +709,10 @@ ip hold-time eigrp 50 3
 ip pim sparse-mode
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN1 +500}}
+interface Vlan {{GEN_P2P_VLAN1 + 500}}
 description GUEST L3-to-{{DIST1_NAME}}
 ip vrf forwarding GUEST
-ip address {{GUEST_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1_GUEST}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -676,10 +723,10 @@ ip hello-interval eigrp 60 1
 ip hold-time eigrp 60 3
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN1 +600}}
+interface Vlan {{GEN_P2P_VLAN1 + 600}}
 description BPARTNER L3-to-{{DIST1_NAME}}
 ip vrf forwarding BPARTNER
-ip address {{BPARTNER_DIST1_P2P_IP}} 255.255.255.254
+ip address {{dist1_BPARTNER}} 255.255.255.254
 !
  no ip redirects
  no ip proxy-arp
@@ -692,7 +739,7 @@ spanning-tree guard root
 !
 interface Vlan {{GEN_P2P_VLAN2}}
 description L3-to-{{DIST2_NAME}}
-ip address {{GEN_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -704,10 +751,10 @@ ip hold-time eigrp 304 3
 ip pim sparse-mode
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN2 +100}}
+interface Vlan {{GEN_P2P_VLAN2 + 100}}
 description INFRA L3-to-{{DIST2_NAME}}
 ip vrf forwarding INFRA
-ip address {{INFRA_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2_INFRA}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -718,10 +765,10 @@ ip hello-interval eigrp 20 1
 ip hold-time eigrp 20 3
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN2 +300}}
+interface Vlan {{GEN_P2P_VLAN2 + 300}}
 description POS L3-to-{{DIST2_NAME}}
 ip vrf forwarding POS
-ip address {{POS_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2_POS}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -732,10 +779,10 @@ ip hello-interval eigrp 40 1
 ip hold-time eigrp 40 3
 spanning-tree guard root
 !
-interface Vlan {{SERVICES_P2P_VLAN2}}
+interface Vlan {{GEN_P2P_VLAN2 + 400}}
 description SERVICES L3-to-{{DIST2_NAME}}
 ip vrf forwarding SERVICES
-ip address {{SERVICES_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2_SERVICES}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -747,10 +794,10 @@ ip hold-time eigrp 50 3
 ip pim sparse-mode
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN2 +500}}
+interface Vlan {{GEN_P2P_VLAN2 + 500}}
 description GUEST L3-to-{{DIST2_NAME}}
 ip vrf forwarding GUEST
-ip address {{GUEST_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2_GUEST}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -761,10 +808,10 @@ ip hello-interval eigrp 60 1
 ip hold-time eigrp 60 3
 spanning-tree guard root
 !
-interface Vlan {{GEN_P2P_VLAN2 +600}}
+interface Vlan {{GEN_P2P_VLAN2 + 600}}
 description BPARTNER L3-to-{{DIST2_NAME}}
 ip vrf forwarding BPARTNER
-ip address {{BPARTNER_DIST2_P2P_IP}} 255.255.255.254
+ip address {{dist2_BPARTNER}} 255.255.255.254
 !
 no ip redirects
 no ip proxy-arp
@@ -781,11 +828,11 @@ interface {{UPLINK_INT1}}
 description {{DIST1_NAME}} {{DISTRO_UPLINK}}
  switchport trunk native vlan {{GEN_P2P_VLAN1}}
  switchport trunk allowed vlan {{GEN_P2P_VLAN1}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN1 +100}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN1 +300}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN1 +400}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN1 +500}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN1 +600}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN1 + 100}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN1 + 300}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN1 + 400}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN1 + 500}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN1 + 600}}
  switchport mode trunk
  switchport nonegotiate
  spanning-tree portfast trunk
@@ -799,11 +846,11 @@ switchport
 description {{DIST2_NAME}} {{DISTRO_UPLINK}}
  switchport trunk native vlan {{GEN_P2P_VLAN2}}
  switchport trunk allowed vlan {{GEN_P2P_VLAN2}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN2 +100}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN2 +300}}
- switchport trunk allowed vlan add {{SERVICES_P2P_VLAN2}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN2 +500}}
- switchport trunk allowed vlan add {{GEN_P2P_VLAN2 +600}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN2 + 100}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN2 + 300}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN2 + 400}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN2 + 500}}
+ switchport trunk allowed vlan add {{GEN_P2P_VLAN2 + 600}}
  switchport mode trunk
  switchport nonegotiate
  spanning-tree portfast trunk
@@ -830,12 +877,12 @@ Spanning-tree portfast
 !
 router eigrp 304
 no auto-summary
-network {{LOOPBACK1_GEN}} 0.0.0.0
-network {{VLAN10_GEN_SVI}} 0.0.0.0
-network {{GEN_DIST1_P2P_IP}} 0.0.0.0
-network {{GEN_DIST2_P2P_IP}} 0.0.0.0
+network {{loopback}} 0.0.0.0
+network {{svi}} 0.0.0.0
+network {{dist1}} 0.0.0.0
+network {{dist2}} 0.0.0.0
 passive-interface default
-eigrp router-id {{LOOPBACK1_GEN}}
+eigrp router-id {{loopback}}
 no passive-interface Vlan {{GEN_P2P_VLAN1}}
 no passive-interface Vlan {{GEN_P2P_VLAN2}}
 eigrp stub connected summary
@@ -845,11 +892,11 @@ router eigrp UE-VRF
 address-family ipv4 unicast vrf INFRA autonomous-system 20
  topology base
   exit-af-topology
-network {{LOOPBACK2_INFRA}} 0.0.0.0
-network {{VLAN20_INFRA_SVI}} 0.0.0.0
-network {{INFRA_DIST1_P2P_IP}} 0.0.0.0
-network {{INFRA_DIST2_P2P_IP}} 0.0.0.0
-eigrp router-id {{LOOPBACK2_INFRA}}
+network {{loopback_INFRA}} 0.0.0.0
+network {{svi_INFRA}} 0.0.0.0
+network {{dist1_INFRA}} 0.0.0.0
+network {{dist2_INFRA}} 0.0.0.0
+eigrp router-id {{loopback_INFRA}}
 eigrp stub connected summary
 nsf
 exit-address-family
@@ -858,11 +905,11 @@ exit-address-family
 address-family ipv4 unicast vrf POS autonomous-system 40
   topology base
   exit-af-topology
-network {{LOOPBACK4_POS}} 0.0.0.0
-network {{VLAN40_POS_SVI}} 0.0.0.0
-network {{POS_DIST1_P2P_IP}} 0.0.0.0
-network {{POS_DIST2_P2P_IP}} 0.0.0.0
-eigrp router-id {{LOOPBACK4_POS}}
+network {{loopback_POS}} 0.0.0.0
+network {{svi_POS}} 0.0.0.0
+network {{dist1_POS}} 0.0.0.0
+network {{dist2_POS}} 0.0.0.0
+eigrp router-id {{loopback_POS}}
 eigrp stub connected summary
 nsf
 exit-address-family
@@ -870,11 +917,11 @@ exit-address-family
 address-family ipv4 unicast vrf SERVICES autonomous-system 50
   topology base
   exit-af-topology
-network {{LOOPBACK5_SERVICES}} 0.0.0.0
-network {{VLAN50_SERVICES_SVI}} 0.0.0.0
-network {{SERVICES_DIST1_P2P_IP}} 0.0.0.0
-network {{SERVICES_DIST2_P2P_IP}} 0.0.0.0
-eigrp router-id {{LOOPBACK5_SERVICES}}
+network {{loopback_SERVICES}} 0.0.0.0
+network {{svi_SERVICES}} 0.0.0.0
+network {{dist1_SERVICES}} 0.0.0.0
+network {{dist2_SERVICES}} 0.0.0.0
+eigrp router-id {{loopback_SERVICES}}
 eigrp stub connected summary
 nsf
 exit-address-family
@@ -882,11 +929,11 @@ exit-address-family
 address-family ipv4 unicast vrf GUEST autonomous-system 60
   topology base
   exit-af-topology
-network {{LOOPBACK6_GUEST}} 0.0.0.0
-network {{VLAN60_GUEST_SVI}} 0.0.0.0
-network {{GUEST_DIST1_P2P_IP}} 0.0.0.0
-network {{GUEST_DIST2_P2P_IP}} 0.0.0.0
-eigrp router-id {{LOOPBACK6_GUEST}}
+network {{loopback_GUEST}} 0.0.0.0
+network {{svi_GUEST}} 0.0.0.0
+network {{dist1_GUEST}} 0.0.0.0
+network {{dist2_GUEST}} 0.0.0.0
+eigrp router-id {{loopback_GUEST}}
 eigrp stub connected summary
 nsf
 exit-address-family
@@ -894,11 +941,11 @@ exit-address-family
 address-family ipv4 unicast vrf BPARTNER autonomous-system 70
   topology base
   exit-af-topology
-network {{LOOPBACK7_BPARTNER}} 0.0.0.0
-network {{VLAN70_BPARTNER_SVI}} 0.0.0.0
-network {{BPARTNER_DIST1_P2P_IP}} 0.0.0.0
-network {{BPARTNER_DIST2_P2P_IP}} 0.0.0.0
-eigrp router-id {{LOOPBACK7_BPARTNER}}
+network {{loopback_BPARTNER}} 0.0.0.0
+network {{svi_BPARTNER}} 0.0.0.0
+network {{dist1_BPARTNER}} 0.0.0.0
+network {{dist2_BPARTNER}} 0.0.0.0
+eigrp router-id {{loopback_BPARTNER}}
 eigrp stub connected summary
 nsf
 exit-address-family
