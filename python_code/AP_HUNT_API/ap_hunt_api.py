@@ -8,8 +8,8 @@ from urllib3.exceptions import InsecureRequestWarning
 # === CONFIGURATION ===
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-DNAC = "https://your-dnac-url"        # Example: https://10.10.10.5
-USERNAME = "admin"
+DNAC = "https://10.147.3.62"        # Example: https://10.10.10.5
+USERNAME = "206889554"
 SWITCH_FILE = "switches.txt"
 
 COMMANDS = ["show power inline", "show lldp neighbors"]

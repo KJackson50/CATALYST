@@ -1,6 +1,8 @@
 How to run
 py ap_hunt.py
 
+NOTES: Need API-level permission mapping for my account
+
 
 Simulation
 🔐 Catalyst Center Login
