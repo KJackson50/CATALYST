@@ -218,9 +218,9 @@ def main():
     ensure_dir(args.out)
     devices = load_inventory(args.inventory)
     from getpass import getpass
-# Prompt once for password if any device is missing one
-if any(not d["password"] for d in devices):
-    shared_password = getpass("Enter switch password: ")
+    # Prompt once for password if any device is missing one
+    if any(not d["password"] for d in devices):
+     shared_password = getpass("Enter switch password: ")
     for d in devices:
         if not d["password"]:
             d["password"] = shared_password

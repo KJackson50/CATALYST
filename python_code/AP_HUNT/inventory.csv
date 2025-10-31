@@ -1,3 +1,2 @@
 host,username,password,device_type
-10.10.10.11,netadmin,,cisco_xe
-10.10.10.12,netadmin,,cisco_xe
+10.145.0.26,kjackson,,cisco_xe
