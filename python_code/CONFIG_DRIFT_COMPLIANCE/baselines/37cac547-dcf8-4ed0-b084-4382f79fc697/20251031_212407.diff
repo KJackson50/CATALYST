@@ -1,0 +1,28 @@
+--- previous
++++ current
+@@ -1,10 +1,10 @@
+ 
+ Building configuration...
+ 
+-Current configuration : 71016 bytes
+-!
+-! Last configuration change at 18:03:26 EST Wed Oct 29 2025 by 206901847@uniparks.com
+-! NVRAM config last updated at 18:11:52 EST Wed Oct 29 2025 by 206901847@uniparks.com
++Current configuration : 71071 bytes
++!
++! Last configuration change at 21:10:18 EST Fri Oct 31 2025 by kjackson
++! NVRAM config last updated at 21:00:37 EST Fri Oct 31 2025 by kjackson
+ !
+ version 17.12
+ service tcp-keepalives-in
+@@ -1557,6 +1557,10 @@
+   eigrp stub connected summary
+   nsf
+  exit-address-family
++!
++router ospf 10
++ network 1.1.1.1 0.0.0.0 area 10
++ network 2.2.2.2 0.0.0.0 area 10
+ !
+ ip default-gateway 10.145.145.129
+ ip forward-protocol nd
