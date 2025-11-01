@@ -10,8 +10,8 @@ import os, difflib
 # === CONFIGURATION ===
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-DNAC = ""        # e.g. https://10.10.10.5
-USERNAME = ""
+DNAC = "https://10.147.3.62"        # e.g. https://10.10.10.5
+USERNAME = "206889554"
 SWITCH_FILE = "device_ids.txt"    # one networkDeviceId per line
 OUTDIR = "baselines"              # local snapshots & diffs
 
