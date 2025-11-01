@@ -17,3 +17,7 @@ https://developer.cisco.com/codeexchange/github/repo/miarond/DNA_Center_API_Use_
 https://developer.cisco.com/codeexchange/github/repo/miarond/DNA_Center_Templating/
 
 https://developer.cisco.com/codeexchange/github/repo/pamosima/PnPAutoClaim/
+
+https://www.youtube.com/watch?v=nOdIyrA2l5A&t=369s
+
+https://www.youtube.com/watch?v=JVQNywo4AbU
